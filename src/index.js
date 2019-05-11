@@ -29,6 +29,10 @@ app.get('/', authorize, cache, (req, res) => {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${req.session.accessToken}`
+    },
+    qs: {
+      limit: 1000,
+      exclude_archived: true
     }
   }).then(body => {
     const { channels } = JSON.parse(body)
