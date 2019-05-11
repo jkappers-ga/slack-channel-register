@@ -2,5 +2,6 @@
 .env
 .env.development
 npm-debug.log
+yarn-error.log
 .DS_Store
 /dist
