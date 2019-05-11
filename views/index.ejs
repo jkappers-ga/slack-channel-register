@@ -1,0 +1,10 @@
+<link href="app.css" rel="stylesheet" />
+<a href="/bye">Log out</a>
+<ul>
+<% channels.forEach(channel => { %>
+  <li>
+    <a href="https://slack.com/app_redirect?channel=<%= channel.id %>">#<%= channel.name %></a>
+    <%= channel.purpose.value %>
+  </li>
+<% }) %>
+</ul>
