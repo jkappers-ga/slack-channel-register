@@ -1,13 +1,10 @@
-import dotenv from 'dotenv'
 import url from 'url'
 import express from 'express'
-import session from 'express-session'
 import request from 'request-promise-native'
+import session from 'cookie-session'
 import locals from './middleware/locals'
 import authorize from './middleware/authorize'
 import cache from './middleware/cache'
-
-dotenv.config()
 
 const {
   PORT,
@@ -19,12 +16,9 @@ const {
 
 const app = express()
 app.set('view engine', 'ejs')
+app.set('views', `${__dirname}/views`)
 app.use(express.static(`${__dirname}/public`))
-app.use(session({
-  secret: SECRET_KEY_BASE,
-  resave: true,
-  saveUninitialized: false
-}))
+app.use(session({ secret: SECRET_KEY_BASE }))
 app.use(locals)
 
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`))
@@ -43,7 +37,7 @@ app.get('/', authorize, cache, (req, res) => {
 })
 
 app.get('/hi', (req, res) => {
-  if (res.locals.isAuthorized) {
+  if (req.session.accessToken) {
     res.redirect('/')
   } else {
     const authUrl = url.format({
@@ -62,7 +56,7 @@ app.get('/hi', (req, res) => {
 })
 
 app.get('/bye', (req, res) => {
-  delete req.session.accessToken
+  req.session = null
   res.locals.isAuthorized = false
   res.redirect('hi')
 })
@@ -74,7 +68,8 @@ app.get('/oauth', (req, res) => {
     qs: {
       code: req.query.code,
       client_id: SLACK_APP_CLIENT_ID,
-      client_secret: SLACK_APP_SECRET_ID
+      client_secret: SLACK_APP_SECRET_ID,
+      redirect_uri: SLACK_APP_REDIRECT_URI
     }
   }).then(body => {
     const data = JSON.parse(body)
